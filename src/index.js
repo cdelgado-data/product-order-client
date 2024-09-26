@@ -1,17 +1,22 @@
+// index.js
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import './index.css';
+import keycloak from './keycloak';
 import App from './App';
-import reportWebVitals from './reportWebVitals';
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
-);
+// Create the root outside of keycloak.init to ensure it's created only once
+const rootElement = document.getElementById('root');
+const root = ReactDOM.createRoot(rootElement);
 
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
-reportWebVitals();
+// Initialize Keycloak and render the app upon successful authentication
+keycloak.init({ onLoad: 'login-required', checkLoginIframe: false })
+  .then((authenticated) => {
+    if (authenticated) {
+      root.render(<App />);
+    } else {
+      keycloak.login();
+    }
+  })
+  .catch((error) => {
+    console.error('Keycloak initialization failed', error);
+  });
